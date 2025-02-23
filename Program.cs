@@ -1,4 +1,5 @@
 using KairoAPI.Components;
+using Microsoft.AspNetCore.Mvc;
 using System.Net;
 
 namespace KairoAPI
@@ -6,15 +7,21 @@ namespace KairoAPI
     public class Program
     {   
         public static List<VersionUpdateLog> versionUpdateLogs = new List<VersionUpdateLog>();
+        public static JsonResult VULJsonResult { get; set; }
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddControllers();
+            builder.Services.AddControllers().AddNewtonsoftJson(options =>
+            {
+                options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+            });
 
+            builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             var app = builder.Build();
-            var a = File.ReadAllLines(Path.Combine(AppDomain.CurrentDomain.BaseDirectory,"UpdateLog.txt"));
-            foreach(string b in a)
+            var a = File.Exists(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "UpdateLog.txt")) ? File.ReadAllLines(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "UpdateLog.txt")) : throw new FileNotFoundException();
+            foreach (string b in a)
             {
                 var c = b.Split(";");
                 List<string> list = new();
@@ -22,40 +29,45 @@ namespace KairoAPI
                 {
                     list.Add(s);
                 }
+                var d = c[0].Split("-");
+                var e = d[1].Split(".");
                 versionUpdateLogs.Add(new()
                 {
-                    Version = c[0],
+                    Version = d[0],
+                    Channel = e[0],
+                    Subversion = int.Parse(e[1]),
                     UpdatedWhat = list,
                     ImportantLevel = int.Parse(c[2])
                 });
             }
+            VULJsonResult = new JsonResult(versionUpdateLogs);
             app.UseRouting();
             app.MapControllers();
             app.UseMiddleware<RealIpMiddleware>();
             app.Run();
         }
-        public class RealIpMiddleware
+    }
+    public class RealIpMiddleware
+    {
+        private readonly RequestDelegate _next;
+
+        public RealIpMiddleware(RequestDelegate next)
         {
-            private readonly RequestDelegate _next;
+            _next = next;
+        }
 
-            public RealIpMiddleware(RequestDelegate next)
+        public Task Invoke(HttpContext context)
+        {
+            var headers = context.Request.Headers;
+            if (headers.ContainsKey("X-Forwarded-For"))
             {
-                _next = next;
+                context.Connection.RemoteIpAddress = IPAddress.Parse(headers["X-Forwarded-For"].ToString().Split(',', StringSplitOptions.RemoveEmptyEntries)[0]);
             }
-
-            public Task Invoke(HttpContext context)
+            else if (headers.ContainsKey("X-Real-IP"))
             {
-                var headers = context.Request.Headers;
-                if (headers.ContainsKey("X-Forwarded-For"))
-                {
-                    context.Connection.RemoteIpAddress = IPAddress.Parse(headers["X-Forwarded-For"].ToString().Split(',', StringSplitOptions.RemoveEmptyEntries)[0]);
-                }
-                else if (headers.ContainsKey("X-Real-IP"))
-                {
-                    context.Connection.RemoteIpAddress = IPAddress.Parse(headers["X-Real-IP"].ToString());
-                }
-                return _next(context);
+                context.Connection.RemoteIpAddress = IPAddress.Parse(headers["X-Real-IP"].ToString());
             }
+            return _next(context);
         }
     }
 }
