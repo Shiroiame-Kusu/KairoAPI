@@ -5,7 +5,7 @@ using System.Net;
 namespace KairoAPI
 {
     public class Program
-    {   
+    {
         public static List<VersionUpdateLog> versionUpdateLogs = new List<VersionUpdateLog>();
         public static JsonResult VULJsonResult { get; set; }
         public static void Main(string[] args)
@@ -25,7 +25,7 @@ namespace KairoAPI
             {
                 var c = b.Split(";");
                 List<string> list = new();
-                foreach(string s in c[1].Split("/"))
+                foreach (string s in c[1].Split("/"))
                 {
                     list.Add(s);
                 }
@@ -35,6 +35,7 @@ namespace KairoAPI
                 {
                     Version = d[0],
                     Channel = e[0],
+                    VersionCode = CodeSwitch(d[0]),
                     Subversion = int.Parse(e[1]),
                     UpdatedWhat = list,
                     ImportantLevel = int.Parse(c[2])
@@ -46,7 +47,16 @@ namespace KairoAPI
             app.UseMiddleware<RealIpMiddleware>();
             app.Run();
         }
+        private static string CodeSwitch(string a)
+        {
+            if (a == "2.4.0")
+            {
+                return "Crychic";
+            }
+            return null;
+        }
     }
+    
     public class RealIpMiddleware
     {
         private readonly RequestDelegate _next;
