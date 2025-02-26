@@ -8,7 +8,7 @@ namespace KairoAPI
     {
         public static List<VersionUpdateLog> versionUpdateLogs = new List<VersionUpdateLog>();
         public static JsonResult VULJsonResult { get; set; }
-        public static void Main(string[] args)
+        public static async void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -20,7 +20,37 @@ namespace KairoAPI
 
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             var app = builder.Build();
-            var a = File.Exists(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "UpdateLog.txt")) ? File.ReadAllLines(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "UpdateLog.txt")) : throw new FileNotFoundException();
+            string[] a = null;
+            if(!File.Exists(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "UpdateLog.txt")))
+            {
+                using (HttpClient client = new()) {
+                    try
+                    {
+                        Byte[] M = await client.GetByteArrayAsync("https://proxy-gh.1l1.icu/https://raw.githubusercontent.com/Shiroiame-Kusu/KairoAPI/refs/heads/main/UpdateLog.txt");
+                        if (M != null)
+                        {
+                            File.WriteAllBytes(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "UpdateLog.txt"), M);
+                        }
+                        else
+                        {
+                            throw new FileNotFoundException();
+                        }
+                    }
+                    catch (Exception ex) {
+                        Byte[] M = await client.GetByteArrayAsync("https://raw.githubusercontent.com/Shiroiame-Kusu/KairoAPI/refs/heads/main/UpdateLog.txt");
+                        if (M != null)
+                        {
+                            File.WriteAllBytes(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "UpdateLog.txt"), M);
+                        }
+                        else
+                        {
+                            throw new FileNotFoundException();
+                        }
+                    }
+                }
+            }
+
+            a = File.ReadAllLines(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "UpdateLog.txt"));
             foreach (string b in a)
             {
                 var c = b.Split(";");
