@@ -8,7 +8,7 @@ namespace KairoAPI
     {
         public static List<VersionUpdateLog> versionUpdateLogs = new List<VersionUpdateLog>();
         public static JsonResult VULJsonResult { get; set; }
-        public static async void Main(string[] args)
+        public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -26,7 +26,7 @@ namespace KairoAPI
                 using (HttpClient client = new()) {
                     try
                     {
-                        Byte[] M = await client.GetByteArrayAsync("https://proxy-gh.1l1.icu/https://raw.githubusercontent.com/Shiroiame-Kusu/KairoAPI/refs/heads/main/UpdateLog.txt");
+                        Byte[] M = client.GetByteArrayAsync("https://proxy-gh.1l1.icu/https://raw.githubusercontent.com/Shiroiame-Kusu/KairoAPI/refs/heads/main/UpdateLog.txt").Result;
                         if (M != null)
                         {
                             File.WriteAllBytes(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "UpdateLog.txt"), M);
@@ -37,7 +37,7 @@ namespace KairoAPI
                         }
                     }
                     catch (Exception ex) {
-                        Byte[] M = await client.GetByteArrayAsync("https://raw.githubusercontent.com/Shiroiame-Kusu/KairoAPI/refs/heads/main/UpdateLog.txt");
+                        Byte[] M = client.GetByteArrayAsync("https://raw.githubusercontent.com/Shiroiame-Kusu/KairoAPI/refs/heads/main/UpdateLog.txt").Result;
                         if (M != null)
                         {
                             File.WriteAllBytes(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "UpdateLog.txt"), M);
