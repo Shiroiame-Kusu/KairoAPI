@@ -21,8 +21,7 @@ namespace KairoAPI
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             var app = builder.Build();
             string[] a = null;
-            if(!File.Exists(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "UpdateLog.txt")))
-            {
+            if (File.Exists(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "UpdateLog.txt"))) File.Delete(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "UpdateLog.txt"));
                 using (HttpClient client = new()) {
                     try
                     {
@@ -48,7 +47,7 @@ namespace KairoAPI
                         }
                     }
                 }
-            }
+            
 
             a = File.ReadAllLines(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "UpdateLog.txt"));
             foreach (string b in a)
