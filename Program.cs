@@ -21,14 +21,14 @@ namespace KairoAPI
             builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             var app = builder.Build();
             string[] a = null;
-            if (File.Exists(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "UpdateLog.txt"))) File.Delete(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "UpdateLog.txt"));
+            if (File.Exists(Path.Combine(Environment.ProcessPath, "UpdateLog.txt"))) File.Delete(Path.Combine(Environment.ProcessPath, "UpdateLog.txt"));
                 using (HttpClient client = new()) {
                     try
                     {
                         Byte[] M = client.GetByteArrayAsync("https://proxy-gh.1l1.icu/https://raw.githubusercontent.com/Shiroiame-Kusu/KairoAPI/refs/heads/main/UpdateLog.txt").Result;
                         if (M != null)
                         {
-                            File.WriteAllBytes(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "UpdateLog.txt"), M);
+                            File.WriteAllBytes(Path.Combine(Environment.ProcessPath, "UpdateLog.txt"), M);
                         }
                         else
                         {
@@ -39,7 +39,7 @@ namespace KairoAPI
                         Byte[] M = client.GetByteArrayAsync("https://raw.githubusercontent.com/Shiroiame-Kusu/KairoAPI/refs/heads/main/UpdateLog.txt").Result;
                         if (M != null)
                         {
-                            File.WriteAllBytes(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "UpdateLog.txt"), M);
+                            File.WriteAllBytes(Path.Combine(Environment.ProcessPath, "UpdateLog.txt"), M);
                         }
                         else
                         {
@@ -49,7 +49,7 @@ namespace KairoAPI
                 }
             
 
-            a = File.ReadAllLines(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "UpdateLog.txt"));
+            a = File.ReadAllLines(Path.Combine(Environment.ProcessPath, "UpdateLog.txt"));
             foreach (string b in a)
             {
                 var c = b.Split(";");
